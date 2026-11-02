@@ -3,7 +3,7 @@
 
 ### <b>Dataset File:</b>
 <a href="student_exam_performance.csv">Student Exam Performance</a><br>
-Source: <a url="https://www.kaggle.com/datasets/mobeenfatimah/student-exam-performance-and-success-dataset?resource=download">Student Exam Performance & Success</a><br>
+Source: <a href="https://www.kaggle.com/datasets/mobeenfatimah/student-exam-performance-and-success-dataset?resource=download">Student Exam Performance & Success</a><br>
 *This data is synthetic*
 
 ### <b>3 Questions to Investigate from the Data:</b>
