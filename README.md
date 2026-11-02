@@ -3,6 +3,9 @@
 
 ### <b>Dataset File:</b>
 <a href="student_exam_performance.csv">Student Exam Performance</a><br>
+Source: <a url="https://www.kaggle.com/datasets/mobeenfatimah/student-exam-performance-and-success-dataset?resource=download">Student Exam Performance & Success</a><br>
+*This data is synthetic*
+
 ### <b>3 Questions to Investigate from the Data:</b>
 Which students are overworking without payoff, and what’s the relationship between effort and outcome?<br>
 Which student profile is most at risk of failing?<br>
