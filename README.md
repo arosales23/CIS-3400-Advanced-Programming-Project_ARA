@@ -1,5 +1,5 @@
 # Effort, Sleep, and Risk
-Project 1 for CIS 3400 Advanced Programming Class
+<i>Project 1 for CIS 3400 Advanced Programming Class</i>
 
 ### <b>Dataset File:</b>
 <a href="student_exam_performance.csv">Student Exam Performance</a><br>
