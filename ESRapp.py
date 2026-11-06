@@ -20,6 +20,13 @@ USEFUL_COLUMNS = [
 ]
 QUARTILE_LABELS = ["Lowest 25%", "Low-Mid", "High-Mid", "Highest 25%"]
 BLUE, RED = "#2a6f97", "#c0392b"
+FACTOR_LABELS = {
+    "sleep_group": "sleep duration", "effort_group": "daily study time",
+    "stress_group": "stress level", "attendance_group": "attendance",
+    "prev_score_group": "previous exam score", "completion_group": "assignment completion",
+    "prep_group": "days of exam preparation", "exam_difficulty": "exam difficulty",
+    "family_income": "family income", "education_level": "education level",
+}
 
 
 # ---------------------------------------------------------------- data
@@ -133,6 +140,13 @@ with tab0:
     plt.tight_layout()
     st.pyplot(fig)
 
+    st.info(
+        f"**Finding:** The typical student in this selection studies "
+        f"{df['study_hours_per_day'].median():.1f} hours a day, sleeps "
+        f"{df['sleep_hours'].median():.1f} hours a night, and scores "
+        f"{df['exam_score'].median():.1f} on the exam. {overall_fail:.1f}% of students fail. "
+        f"Dashed red lines mark each median.")
+
 # ------------------------------------------------------------------ Q1
 with tab1:
     st.header("Which students are overworking without payoff?")
@@ -145,6 +159,24 @@ with tab1:
              f"{df['overworked_no_payoff'].mean() * 100:.2f}% of students", delta_color="off")
     b.metric("Stricter flag (+ high assignment completion)", f"{df['overworked_strict'].sum():,}",
              f"{df['overworked_strict'].mean() * 100:.2f}% of students", delta_color="off")
+
+    rho_all = df["study_hours_per_day"].corr(df["exam_score"], method="spearman")
+    rho_by_diff = [
+        df.loc[df["exam_difficulty"] == d_, "study_hours_per_day"]
+        .corr(df.loc[df["exam_difficulty"] == d_, "exam_score"], method="spearman")
+        for d_ in ["Easy", "Medium", "Hard"] if (df["exam_difficulty"] == d_).sum() > 2]
+    link = "more study time generally goes with higher scores" if rho_all >= 0.2 else \
+        "study time has only a weak link to scores"
+    st.info(
+        f"**Finding:** Only {df['overworked_no_payoff'].mean() * 100:.1f}% of students "
+        f"({df['overworked_no_payoff'].sum():,}) study a lot but score poorly, so overworking "
+        f"without payoff is the exception. Across all students, {link} "
+        f"(Spearman r = {rho_all:.2f})"
+        + (f", and the link is similar across exam difficulty levels "
+           f"(r from {min(rho_by_diff):.2f} to {max(rho_by_diff):.2f}). "
+           if len(rho_by_diff) > 1 else ". ") +
+        f"Advisors can use the flagged group's profile table below to see what else sets "
+        f"these students apart, such as sleep, stress, or attendance.")
 
     sample = df.sample(min(8000, len(df)), random_state=1)
     fig, ax = plt.subplots(figsize=(9, 5))
@@ -210,12 +242,23 @@ with tab2:
     rows = []
     for f in factors:
         g = df.groupby(f, observed=True)["failed"].mean() * 100
-        if g.empty:
+        if len(g) < 2:  # a factor with a single group (e.g. one difficulty selected) has no gap
             continue
         rows.append({"factor": f, "lowest_fail_rate": g.min(), "highest_fail_rate": g.max(),
                      "gap_(pts)": g.max() - g.min(), "riskiest_group": str(g.idxmax())})
-    st.dataframe(pd.DataFrame(rows).sort_values("gap_(pts)", ascending=False)
-                 .round(1).reset_index(drop=True), use_container_width=True)
+    gap_tbl = (pd.DataFrame(rows).sort_values("gap_(pts)", ascending=False)
+               .round(1).reset_index(drop=True))
+    st.dataframe(gap_tbl, use_container_width=True)
+
+    g1, g2, g3, gl = gap_tbl.iloc[0], gap_tbl.iloc[1], gap_tbl.iloc[2], gap_tbl.iloc[-1]
+    st.info(
+        f"**Finding:** The factor that separates pass from fail the most is "
+        f"{FACTOR_LABELS[g1['factor']]}: the riskiest group ({g1['riskiest_group']}) fails "
+        f"{g1['highest_fail_rate']:.1f}% of the time vs {g1['lowest_fail_rate']:.1f}% for the "
+        f"safest group. Next are {FACTOR_LABELS[g2['factor']]} ({g2['gap_(pts)']:.0f}-point gap) "
+        f"and {FACTOR_LABELS[g3['factor']]} ({g3['gap_(pts)']:.0f}-point gap). "
+        f"{FACTOR_LABELS[gl['factor']].capitalize()} matters least ({gl['gap_(pts)']:.1f} points). "
+        f"These are associations, not proven causes, and the data is synthetic.")
 
     with st.expander("Fail rate by each factor", expanded=False):
         fig, axes = plt.subplots(5, 2, figsize=(13, 20))
@@ -278,6 +321,15 @@ with tab2:
             plt.tight_layout()
             st.pyplot(fig)
 
+            worst = top.iloc[0]
+            st.info(
+                f"**Finding:** The highest-risk profile is **{worst['label']}**: "
+                f"{worst['fail_rate']:.1f}% fail (n={int(worst['students']):,}), "
+                f"about {worst['lift']:.1f}x the overall rate of {overall_fail:.1f}%."
+                + (" That is higher than any single factor above, so counselors should look "
+                   "at combinations of factors, not one factor alone."
+                   if worst["fail_rate"] > g1["highest_fail_rate"] else ""))
+
             l, r = st.columns(2)
             l.markdown("**Most at-risk**")
             l.dataframe(profiles.head(10).reset_index(drop=True))
@@ -308,6 +360,20 @@ with tab3:
     plt.suptitle("Median exam score: study time vs. sleep", fontsize=13)
     plt.tight_layout()
     st.pyplot(fig)
+
+    rho_study = df["study_hours_per_day"].corr(df["exam_score"], method="spearman")
+    rho_sleep = df["sleep_hours"].corr(df["exam_score"], method="spearman")
+    verdict = ("Sleep matters, but not as much as study time"
+               if abs(rho_study) > abs(rho_sleep) else "Sleep matters at least as much as study time")
+    sleep_fail = df.groupby("sleep_group", observed=True)["failed"].mean() * 100
+    sleep_note = ""
+    if {"Short (<6h)", "Long (>8h)"} <= set(sleep_fail.index):
+        sleep_note = (f" Students sleeping under 6 hours fail {sleep_fail['Short (<6h)']:.1f}% "
+                      f"of the time vs {sleep_fail['Long (>8h)']:.1f}% for those sleeping over 8 hours.")
+    st.info(
+        f"**Finding:** {verdict}. Study time has a Spearman correlation of {rho_study:.2f} "
+        f"with exam score, compared with {rho_sleep:.2f} for sleep.{sleep_note} "
+        f"Both study habits and sleep are worth discussing with students.")
 
     for g in ["effort_group", "sleep_group"]:
         t = (df.groupby(g, observed=True)
