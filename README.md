@@ -10,7 +10,7 @@ Download link to the raw dataset file:
 "Generated via a custom data synthesis engine. Numerical features, interaction terms (stress vs. anxiety), and target scores are standardized (Mean = 62.0, Std = 16.0) to model a realistic ~77% pass rate and grade distribution. ~5–10% missing values were introduced across 6 selected columns for imputation tasks."<br>
 
 ## <b>Project Notebook:</b>
-<a href="Effort,_Sleep,_and_Risk">Effort, Sleep, and Risk</a><br>
+<a href="Effort,_Sleep,_and_Risk.ipynb">Effort, Sleep, and Risk</a><br>
 *Some cells were created or edited with vibe coding*<br>
 
 ## <b>Published Project URL:</br>
