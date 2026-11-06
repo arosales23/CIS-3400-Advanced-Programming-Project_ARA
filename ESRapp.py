@@ -20,6 +20,7 @@ USEFUL_COLUMNS = [
 ]
 QUARTILE_LABELS = ["Lowest 25%", "Low-Mid", "High-Mid", "Highest 25%"]
 BLUE, RED = "#2a6f97", "#c0392b"
+INCOME_ORDER = ["Low", "Lower-Middle", "Middle", "Upper-Middle", "High"]
 FACTOR_LABELS = {
     "sleep_group": "sleep duration", "effort_group": "daily study time",
     "stress_group": "stress level", "attendance_group": "attendance",
@@ -105,7 +106,7 @@ edu = st.sidebar.multiselect(
     default=sorted(data["education_level"].dropna().unique()))
 diff = st.sidebar.multiselect(
     "Exam difficulty", ["Easy", "Medium", "Hard"], default=["Easy", "Medium", "Hard"])
-incomes = list(data["family_income"].dropna().unique())
+incomes = [i for i in INCOME_ORDER if i in set(data["family_income"].dropna())]
 inc = st.sidebar.multiselect("Family income", incomes, default=incomes)
 
 # Thresholds come from the full dataset so flags stay comparable when filtering.
