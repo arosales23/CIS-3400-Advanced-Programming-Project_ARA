@@ -74,6 +74,18 @@ raw, source_name = load_data()
 st.title("Effort, Sleep, and Risk")
 st.caption("Analysis of the Student Exam Performance & Success dataset (synthetic data)")
 
+st.markdown(
+    """
+    **Who this benefits:** School counselors and academic advisors.
+
+    **What it investigates:** This dashboard looks at 100,000 students to:
+    (1) Spot students whose study effort isn't paying off
+    (2) Identify which student profiles are most at risk of failing
+    (3) Give evidence-based advice on balancing study time and sleep
+    """
+)
+st.divider()
+
 if raw is None:
     st.info("Place `student_exam_performance.csv` next to `app.py`, or upload it in the sidebar.")
     st.stop()
