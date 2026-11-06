@@ -14,7 +14,7 @@ Download link to the raw dataset file:
 ## <b>Project Notebook:</b>
 <a href="Effort,_Sleep,_and_Risk">Effort, Sleep, and Risk</a><br>
 *Some cells were created or edited with vibe coding*<br>
-<br
+<br>
 
 ## <b>Published Project URL:</br>
 Link to Project URL: <a href="https://cis-3400-advanced-programming-projectara-r5zr53vudbyupvzzaqm7d.streamlit.app/">Streamlit Community Cloud</a><br>
